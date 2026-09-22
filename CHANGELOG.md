@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `--network` now auto-downloads the requested pickle from NGC when it is
+  not present in `./models/`. Matches names with or without the `.pkl`
+  extension against the NGC file listing; skips the network call when the
+  value is already a URL or a local path.
 - `gen_faces.py` CLI for generating face images from a pretrained StyleGAN3
   network. Supports `--num` (non-repeatable, OS-entropy-seeded) and `--seeds`
   (deterministic, bit-compatible with upstream `gen_images.py`) generation
@@ -27,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   renames on success. Accepts the name with or without `.pkl`.
 - `--network` accepts a bare filename with or without the `.pkl`
   extension; resolves against `./models/` first, then falls back to a
-  URL passthrough for `dnnlib.util.open_url`.
+  URL passthrough for `dnnlib.util.open_url`. 
 - Auto-adds a sibling `stylegan3/` checkout to `sys.path`, so `dnnlib`
   and `legacy` are importable without setting `PYTHONPATH`.
 - `uv`-based project configuration (`pyproject.toml`, `uv.lock`).
@@ -39,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Unknown `--network` names now fail fast with a clear `SystemExit`
+  pointing at `--list-models`, instead of propagating a raw
+  `FileNotFoundError` from `dnnlib.util.open_url`.
 - Type annotations migrated from `typing.List/Optional/Tuple/Union` to
   PEP 585 built-in generics (`list`, `tuple`, `dict`) and PEP 604 union
   syntax (`X | Y`), enabled on Python 3.9/3.10 via

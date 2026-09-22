@@ -321,7 +321,7 @@ def download_model(name: str) -> None:
 
     Args:
         name: The pickle name, with or without the ``.pkl`` extension
-            (e.g. ``'stylegan3-t-ffhq-256x256'``).
+            (e.g. ``'stylegan3-r-ffhqu-256x256'``).
 
     Raises:
         urllib.error.HTTPError: If NGC returns a non-2xx status (typically
@@ -421,7 +421,7 @@ def parse_args() -> argparse.Namespace:
   # Reproducible faces from explicit seeds (same seed -> same face, like gen_images.py)
   python gen_faces.py --outdir=out --seeds=0,1,4-6 --network=stylegan3-r-ffhq-1024x1024
 ''')
-    parser.add_argument('--network', dest='network_pkl', type=str, default='stylegan3-t-ffhq-256x256',
+    parser.add_argument('--network', dest='network_pkl', type=str, default='stylegan3-r-ffhqu-256x256',
                          help='Network pickle: filename under ./models, a local path, or a URL. (default: %(default)s)')
     parser.add_argument('--seeds', type=parse_range, default=None,
                          help="List/range of seeds for reproducible output (e.g. '0,1,4-6'), one image per seed. "

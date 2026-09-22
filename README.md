@@ -14,8 +14,8 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 > 1. **Clone** this repository to the machine you operate on.
 > 2. **Install dependencies** with `uv sync`.
 > 3. **Clone the StyleGAN3 source** with `git clone https://github.com/NVlabs/stylegan3.git`.
-> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model stylegan3-t-ffhq-256x256`. For CPU-only machines prefer the 256×256 model, else the 1024×1024 model if CUDA is present.
-> 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhq-256x256`.
+> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model stylegan3-r-ffhqu-256x256`. For CPU-only machines prefer the 256×256 model, else the 1024×1024 model if CUDA is present.
+> 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-r-ffhqu-256x256`.
 >
 > Ask the user how many images they want and which network to use (list available pickles or suggest) before generating, unless they've already said.
 
@@ -61,7 +61,7 @@ uv run python gen_faces.py --list-models
 Fetch one directly into `./models/` (no curl needed):
 
 ```bash
-uv run python gen_faces.py --download-model stylegan3-t-ffhq-256x256
+uv run python gen_faces.py --download-model stylegan3-r-ffhqu-256x256
 ```
 
 On CPU, prefer the 256×256 model. Skips the download if the file already exists.
@@ -71,7 +71,7 @@ On CPU, prefer the 256×256 model. Skips the download if the file already exists
 Two images into `./out/`:
 
 ```bash
-uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhq-256x256
+uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-r-ffhqu-256x256
 ```
 
 On a CPU-only machine the 256×256 network runs at ~10s/image; the default 1024×1024 network is dramatically slower and really wants a CUDA GPU.
@@ -94,28 +94,28 @@ uv run python gen_faces.py --outdir=out --num=3 --translate=0.3,1 --rotate=15
 
 **Key flags:**
 
-| Flag               | Description                                                                            | Default                    |
-| ------------------ | -------------------------------------------------------------------------------------- | -------------------------- |
-| `--network`        | Network pickle: filename under `./models`, a local path, or a URL                      | `stylegan3-t-ffhq-256x256` |
-| `--seeds`          | Comma/range list for reproducible output (e.g. `0,1,4-6`), one image per seed          | none (random)              |
-| `--num`            | Number of images to generate (ignored if `--seeds` is given)                           | `1`                        |
-| `--trunc`          | Truncation psi                                                                         | `0.6`                      |
-| `--noise-mode`     | `const`, `random`, or `none`                                                           | `const`                    |
-| `--outdir`         | Output directory (created if missing)                                                  | `.`                        |
-| `--jpeg-quality`   | JPEG quality, 1–100                                                                    | `70`                       |
-| `--device`         | `cpu`, `cuda`, or `auto`                                                               | `auto`                     |
-| `--translate`      | Translate XY as `"x,y"`                                                                | `0,0`                      |
-| `--rotate`         | Rotation angle in degrees                                                              | `0`                        |
-| `--list-models`    | Print StyleGAN3 pickles available on NGC, marking any already in `./models`, then exit | off                        |
-| `--json`           | With `--list-models`, emit JSON instead of a table                                     | off                        |
-| `--download-model` | Fetch a pickle from NGC into `./models/` (`.pkl` optional), then exit                  | none                       |
+| Flag               | Description                                                                            | Default                     |
+| ------------------ | -------------------------------------------------------------------------------------- | --------------------------- |
+| `--network`        | Network pickle: filename under `./models`, a local path, or a URL                      | `stylegan3-r-ffhqu-256x256` |
+| `--seeds`          | Comma/range list for reproducible output (e.g. `0,1,4-6`), one image per seed          | none (random)               |
+| `--num`            | Number of images to generate (ignored if `--seeds` is given)                           | `1`                         |
+| `--trunc`          | Truncation psi                                                                         | `0.6`                       |
+| `--noise-mode`     | `const`, `random`, or `none`                                                           | `const`                     |
+| `--outdir`         | Output directory (created if missing)                                                  | `.`                         |
+| `--jpeg-quality`   | JPEG quality, 1–100                                                                    | `70`                        |
+| `--device`         | `cpu`, `cuda`, or `auto`                                                               | `auto`                      |
+| `--translate`      | Translate XY as `"x,y"`                                                                | `0,0`                       |
+| `--rotate`         | Rotation angle in degrees                                                              | `0`                         |
+| `--list-models`    | Print StyleGAN3 pickles available on NGC, marking any already in `./models`, then exit | off                         |
+| `--json`           | With `--list-models`, emit JSON instead of a table                                     | off                         |
+| `--download-model` | Fetch a pickle from NGC into `./models/` (`.pkl` optional), then exit                  | none                        |
 
 ## Additional material
 
 - [StyleGAN3 pre-trained models](https://ngc.nvidia.com/catalog/models/nvidia:research:stylegan3) for config T (translation equiv.) and config R (translation and rotation equiv.)
   > <sub>Full JSON listing (canonical, always current): `GET https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files`</sub><br>
   > <sub>Access individual networks via `https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/<MODEL>`, where `<MODEL>` is one of:</sub><br>
-  > <sub>`stylegan3-t-ffhq-1024x1024.pkl`, `stylegan3-t-ffhq-1024x1024.pkl`, `stylegan3-t-ffhq-256x256.pkl`</sub><br>
-  > <sub>`stylegan3-r-ffhq-1024x1024.pkl`, `stylegan3-r-ffhq-1024x1024.pkl`, `stylegan3-r-ffhq-256x256.pkl`</sub><br>
+  > <sub>`stylegan3-t-ffhq-1024x1024.pkl`, `stylegan3-t-ffhqu-1024x1024.pkl`, `stylegan3-t-ffhqu-256x256.pkl`</sub><br>
+  > <sub>`stylegan3-r-ffhq-1024x1024.pkl`, `stylegan3-r-ffhqu-1024x1024.pkl`, `stylegan3-r-ffhqu-256x256.pkl`</sub><br>
   > <sub>`stylegan3-t-metfaces-1024x1024.pkl`, `stylegan3-t-metfacesu-1024x1024.pkl`</sub><br>
   > <sub>`stylegan3-r-metfaces-1024x1024.pkl`, `stylegan3-r-metfacesu-1024x1024.pkl`</sub><br>
