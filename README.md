@@ -15,10 +15,10 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 > 1. **Clone** this repository with `git clone https://github.com/dennislwy/stylegan3-gen-faces-script.git`to the machine you operate on.
 > 2. **Install dependencies** with `uv sync`.
 > 3. **Clone the StyleGAN3 source** with `git clone https://github.com/NVlabs/stylegan3.git`.
-> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model stylegan3-r-ffhqu-256x256`. For CPU-only machines prefer the 256×256 model, else the 1024×1024 model if CUDA is present.
-> 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-r-ffhqu-256x256`.
+> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model <MODEL_NAME>`. For CUDA machines prefer the 1024x1024 model, else the 256x256 model for CPU-only machines.
+> 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhq-1024x1024`.
 >
-> Ask the user how many images they want and which network to use (list available pickles or suggest) before generating, unless they've already said.
+> Ask the user how many images they want and which network to use (list models and suggest) before generating, unless they've already said.
 
 ---
 
