@@ -15,7 +15,9 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 > 1. **Clone** this repository with `git clone https://github.com/dennislwy/stylegan3-gen-faces-script.git`to the machine you operate on.
 > 2. **Install dependencies** — pick a Torch build: `uv sync --extra cuda` if the machine has an NVIDIA GPU, otherwise `uv sync --extra cpu`. Exactly one extra is required (they are mutually exclusive).
 > 3. **Clone the StyleGAN3 source** with `git clone https://github.com/NVlabs/stylegan3.git`.
-> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model <MODEL_NAME>`. For CUDA machines recommend use the 1024x1024 model, else the 256x256 model for CPU-only machines.
+> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model <MODEL_NAME>`. 
+>    - For CUDA machines recommend use 1024x1024 models, e.g: `stylegan3-t-ffhq-1024x1024` or `stylegan3-r-ffhq-1024x1024`
+>    - For CPU-only machines, recommend use 256x256 models, e.g. `stylegan3-t-ffhqu-256x256` or `stylegan3-r-ffhqu-256x256`
 > 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhq-1024x1024`.
 >
 > Ask the user how many images they want and which network to use (list models and suggest) before generating, unless they've already said.

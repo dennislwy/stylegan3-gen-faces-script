@@ -1,7 +1,7 @@
 # Pretrained network pickles and generated images
 models/
 out/
-stylegan*/
+stylegan3/
 *.pkl
 *.jpg
 .python-version
