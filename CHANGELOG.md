@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] - 2026-09-22
+## [1.0.1](https://github.com/dennislwy/stylegan3-gen-faces-script/releases/tag/1.0.1) - 2026-09-22
 
 ### Added
 
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pinned `torch==2.6.0` (previously `>=2.0`) for reproducible installs across the `cpu` and `cuda` extras.
 
-## [1.0.0] - 2026-09-22
+## [1.0.0](https://github.com/dennislwy/stylegan3-gen-faces-script/releases/tag/1.0.0) - 2026-09-22
 
 ### Added
 
@@ -42,5 +42,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `scipy` to project dependencies — StyleGAN3 network pickles import it at unpickle time.
 - Pinned `setuptools<80` — upstream `torch_utils.ops.conv2d_gradfix` imports `pkg_resources`, which was removed from setuptools 81+.
-
-[1.0.0]: https://github.com/dennislwy/stylegan3-gen-faces-script/releases/tag/1.0.0
