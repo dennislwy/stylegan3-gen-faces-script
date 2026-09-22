@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- With `--seeds`, output files are now named `seed-<seed>.jpg` (e.g. `seed-1.jpg`) instead of getting a ULID name, so a rerun with the same seed overwrites the same file. Unseeded runs (`--num`) keep the `<ulid10>.jpg` naming.
+
 ## [1.0.1](https://github.com/dennislwy/stylegan3-gen-faces-script/releases/tag/1.0.1) - 2026-09-22
 
 ### Added

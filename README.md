@@ -2,7 +2,9 @@
 
 Generate random, photorealistic face images using a pretrained [StyleGAN3](https://github.com/NVlabs/stylegan3) network.
 
-Each output image is saved as `<ulid10>.jpg`, named after the first 10 characters of a ULID (the time-based, sortable part), so files sort chronologically and never collide — e.g. `0A6PTW9HNO.jpg`.
+With `--seeds`, each output image is named after the seed that produced it — e.g. `seed-1.jpg` — so a rerun with the same seed overwrites the same file.
+
+Otherwise each image is saved as `<ulid10>.jpg`, named after the first 10 characters of a ULID (the time-based, sortable part), so files sort chronologically and never collide — e.g. `0A6PTW9HNO.jpg`.
 
 ---
 
@@ -90,7 +92,7 @@ On a CPU-only machine the 256×256 network runs at ~10s/image; the default 1024�
 # Generate 5 non-repeatable random faces, written to ./out
 uv run python gen_faces.py --outdir=out --num=5
 
-# Generate reproducible faces from explicit seeds (same seed -> same face)
+# Generate reproducible faces from explicit seeds (same seed -> same face), saved as seed-0.jpg, seed-1.jpg, ...
 uv run python gen_faces.py --outdir=out --seeds=0,1,4-6 --network=stylegan3-r-ffhq-1024x1024
 
 # CPU-only, lower JPEG quality, custom truncation

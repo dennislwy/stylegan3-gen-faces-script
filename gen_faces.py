@@ -8,9 +8,11 @@ CLI. Two modes of image generation:
   yields the same face.
 * ``--num`` — non-repeatable, OS-entropy-seeded latents (``secrets.randbits``).
 
-Each output file is named after the first 10 characters of a ULID (the
-time-based, sortable part), e.g. ``0A6PTW9HNO.jpg`` — so files sort
-chronologically and collisions within a millisecond are avoided by a retry.
+With ``--seeds``, each output file is named after the seed that produced it,
+e.g. ``seed-1.jpg`` — so a rerun with the same seed overwrites the same file.
+Otherwise the name is the first 10 characters of a ULID (the time-based,
+sortable part), e.g. ``0A6PTW9HNO.jpg`` — so files sort chronologically and
+collisions within a millisecond are avoided by a retry.
 
 Convenience subcommands (each exits before touching Torch):
 
@@ -411,7 +413,7 @@ def parse_args() -> argparse.Namespace:
         The ``argparse.Namespace`` produced by ``ArgumentParser.parse_args``.
     """
     parser = argparse.ArgumentParser(
-        description='Generate face images and save them as <ulid10>.jpg.',
+        description='Generate face images and save them as <ulid10>.jpg (or seed-<seed>.jpg with --seeds).',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''Examples:
 
@@ -424,7 +426,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--network', dest='network_pkl', type=str, default='stylegan3-r-ffhqu-256x256',
                          help='Network pickle: filename under ./models, a local path, or a URL. (default: %(default)s)')
     parser.add_argument('--seeds', type=parse_range, default=None,
-                         help="List/range of seeds for reproducible output (e.g. '0,1,4-6'), one image per seed. "
+                         help="List/range of seeds for reproducible output (e.g. '0,1,4-6'), one image per seed, "
+                              'saved as seed-<seed>.jpg. '
                               'Omit for non-repeatable random faces (use --num to set the count).')
     parser.add_argument('--num', dest='num_images', type=int, default=1,
                          help='Number of images to generate. Ignored if --seeds is given (len(seeds) is used instead). (default: %(default)s)')
@@ -514,7 +517,10 @@ def main():
         # StyleGAN3 emits NCHW in [-1, 1]; convert to HWC uint8 [0, 255] for PIL.
         img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
         img_np = img[0].cpu().numpy()
-        path = unique_ulid10_path(args.outdir, 'jpg')
+        # A seeded image is reproducible, so name it after its seed and let a
+        # rerun overwrite it; unseeded ones get a fresh sortable ULID name.
+        path = (os.path.join(args.outdir, f'seed-{seed}.jpg') if seed is not None
+                else unique_ulid10_path(args.outdir, 'jpg'))
         PIL.Image.fromarray(img_np, 'RGB').save(path, 'JPEG', quality=args.jpeg_quality)
     elapsed = time.perf_counter() - start_time
     img_per_sec = len(seed_list) / elapsed if elapsed > 0 else 0.0
