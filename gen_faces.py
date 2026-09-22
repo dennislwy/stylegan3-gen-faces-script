@@ -520,7 +520,7 @@ def main():
     img_per_sec = len(seed_list) / elapsed if elapsed > 0 else 0.0
 
     print(f"Done. {len(seed_list)} image(s) written to '{args.outdir}' "
-          f"(took {humanize_duration(elapsed)}, {img_per_sec:.2f}img/s)")
+          f"(took {humanize_duration(elapsed)}, {img_per_sec:.2f} img/s)")
 
 
 if __name__ == '__main__':
