@@ -119,23 +119,74 @@ def resolve_device(device: str) -> torch.device:
     return torch.device(device)
 
 
-def list_models() -> None:
-    """Print available StyleGAN3 pickles on NGC, marking any already in ./models."""
+def _models_dir() -> str:
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
+
+
+def _fetch_ngc_pkls() -> List[dict]:
+    """Return NGC modelFiles filtered to top-level *.pkl entries, sorted by name."""
     with urllib.request.urlopen(NGC_FILES_URL, timeout=30) as resp:
         data = json.load(resp)
-    models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
-    files = sorted(
+    return sorted(
         (f for f in data.get('modelFiles', [])
          if f['path'].endswith('.pkl') and '/' not in f['path']),
         key=lambda f: f['path'],
     )
+
+
+def list_models(as_json: bool = False) -> None:
+    """Print available StyleGAN3 pickles on NGC, marking any already in ./models."""
+    files = _fetch_ngc_pkls()
+    models_dir = _models_dir()
+
+    if as_json:
+        payload = [
+            {
+                'name': f['path'],
+                'sizeBytes': f['sizeInBytes'],
+                'url': f'{NGC_FILES_URL}/{f["path"]}',
+                'downloaded': os.path.isfile(os.path.join(models_dir, f['path'])),
+            }
+            for f in files
+        ]
+        json.dump(payload, sys.stdout, indent=2)
+        sys.stdout.write('\n')
+        return
+
     print(f'{"":2}  {"NAME":40} {"SIZE":>8}')
     for f in files:
         name = f['path']
         size_mb = f['sizeInBytes'] / (1024 * 1024)
         mark = '*' if os.path.isfile(os.path.join(models_dir, name)) else ' '
         print(f'{mark:2}  {name:40} {size_mb:>6.1f}M')
-    print(f'\n({sum(1 for f in files if os.path.isfile(os.path.join(models_dir, f["path"])))} of {len(files)} present in ./models; * = already downloaded)')
+    present = sum(1 for f in files if os.path.isfile(os.path.join(models_dir, f['path'])))
+    print(f'\n({present} of {len(files)} present in ./models; * = already downloaded)')
+
+
+def download_model(name: str) -> None:
+    """Fetch a StyleGAN3 pickle from NGC into ./models/. Skips if already present."""
+    if not name.endswith('.pkl'):
+        name = name + '.pkl'
+    models_dir = _models_dir()
+    os.makedirs(models_dir, exist_ok=True)
+    dest = os.path.join(models_dir, name)
+    if os.path.isfile(dest):
+        print(f'Already downloaded: {dest}')
+        return
+
+    url = f'{NGC_FILES_URL}/{name}'
+    print(f'Downloading {url}')
+    with urllib.request.urlopen(url, timeout=60) as resp:
+        total = int(resp.headers.get('Content-Length') or 0)
+        tmp = dest + '.part'
+        with open(tmp, 'wb') as out, tqdm(
+            total=total or None, unit='B', unit_scale=True, unit_divisor=1024, desc=name
+        ) as bar:
+            while chunk := resp.read(1 << 16):
+                out.write(chunk)
+                bar.update(len(chunk))
+    os.replace(tmp, dest)
+    print(f'Saved to {dest}')
 
 
 def resolve_network(network: str) -> str:
@@ -176,8 +227,8 @@ def parse_args() -> argparse.Namespace:
                          help='Truncation psi. (default: %(default)s)')
     parser.add_argument('--noise-mode', choices=['const', 'random', 'none'], default='const',
                          help='Noise mode. (default: %(default)s)')
-    parser.add_argument('--outdir', type=str, default='.',
-                         help='Output directory (created if missing). (default: current directory)')
+    parser.add_argument('--outdir', type=str, default='./out',
+                         help='Output directory (created if missing). (default: %(default)s)')
     parser.add_argument('--jpeg-quality', dest='jpeg_quality', type=jpeg_quality_type, default=70,
                          help='JPEG quality, 1-100. (default: %(default)s)')
     parser.add_argument('--device', choices=['cpu', 'cuda', 'auto'], default='auto',
@@ -188,13 +239,20 @@ def parse_args() -> argparse.Namespace:
                          help='Rotation angle in degrees. (default: %(default)s)')
     parser.add_argument('--list-models', action='store_true',
                          help='Fetch the NGC file list, print available StyleGAN3 pickles (marking any already in ./models), then exit.')
+    parser.add_argument('--json', action='store_true',
+                         help='With --list-models, emit machine-readable JSON instead of a table.')
+    parser.add_argument('--download-model', metavar='NAME', default=None,
+                         help='Download a pickle from NGC into ./models/ (the .pkl extension is optional), then exit.')
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     if args.list_models:
-        list_models()
+        list_models(as_json=args.json)
+        return
+    if args.download_model:
+        download_model(args.download_model)
         return
     os.makedirs(args.outdir, exist_ok=True)
     dev = resolve_device(args.device)

@@ -14,8 +14,8 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 > 1. **Clone** this repository to the machine you operate on.
 > 2. **Install dependencies** with `uv sync`.
 > 3. **Clone the StyleGAN3 source** with `git clone https://github.com/NVlabs/stylegan3.git`.
-> 4. **Download a pretrained network** into `./models/`. List available pickles with `uv run python gen_faces.py --list-models` (or `curl -s https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files` for raw JSON). For CPU-only machines prefer the 256×256 model, else 1024x1024 model if CUDA present. Example: `curl -L -o models/stylegan3-t-ffhqu-256x256.pkl https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl`.
-> 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl`. The script auto-adds a sibling `stylegan3/` checkout to `sys.path`, so no `PYTHONPATH` setup is needed.
+> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model stylegan3-t-ffhqu-256x256`. For CPU-only machines prefer the 256×256 model, else the 1024×1024 model if CUDA is present.
+> 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256`.
 >
 > Ask the user how many images they want and which network to use (list available pickles or suggest) before generating, unless they've already said.
 
@@ -55,14 +55,16 @@ git clone https://github.com/NVlabs/stylegan3.git
 
 ```bash
 uv run python gen_faces.py --list-models
+# add --json for machine-readable output
 ```
 
-Then grab a pickle. On CPU, prefer the 256×256 model:
+Fetch one directly into `./models/` (no curl needed):
 
 ```bash
-curl -L -o models/stylegan3-t-ffhqu-256x256.pkl \
-  https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl
+uv run python gen_faces.py --download-model stylegan3-t-ffhqu-256x256
 ```
+
+On CPU, prefer the 256×256 model. Skips the download if the file already exists.
 
 ### 4. Generate faces
 
@@ -92,19 +94,21 @@ uv run python gen_faces.py --outdir=out --num=3 --translate=0.3,1 --rotate=15
 
 **Key flags:**
 
-| Flag             | Description                                                                   | Default                          |
-| ---------------- | ----------------------------------------------------------------------------- | -------------------------------- |
-| `--network`      | Network pickle: filename under `./models`, a local path, or a URL             | `stylegan3-t-ffhq-1024x1024.pkl` |
-| `--seeds`        | Comma/range list for reproducible output (e.g. `0,1,4-6`), one image per seed | none (random)                    |
-| `--num`          | Number of images to generate (ignored if `--seeds` is given)                  | `1`                              |
-| `--trunc`        | Truncation psi                                                                | `0.6`                            |
-| `--noise-mode`   | `const`, `random`, or `none`                                                  | `const`                          |
-| `--outdir`       | Output directory (created if missing)                                         | `.`                              |
-| `--jpeg-quality` | JPEG quality, 1–100                                                           | `70`                             |
-| `--device`       | `cpu`, `cuda`, or `auto`                                                      | `auto`                           |
-| `--translate`    | Translate XY as `"x,y"`                                                       | `0,0`                            |
-| `--rotate`       | Rotation angle in degrees                                                     | `0`                              |
-| `--list-models`  | Print StyleGAN3 pickles available on NGC, marking any already in `./models`, then exit | off                              |
+| Flag               | Description                                                                            | Default                          |
+| ------------------ | -------------------------------------------------------------------------------------- | -------------------------------- |
+| `--network`        | Network pickle: filename under `./models`, a local path, or a URL                      | `stylegan3-t-ffhq-1024x1024.pkl` |
+| `--seeds`          | Comma/range list for reproducible output (e.g. `0,1,4-6`), one image per seed          | none (random)                    |
+| `--num`            | Number of images to generate (ignored if `--seeds` is given)                           | `1`                              |
+| `--trunc`          | Truncation psi                                                                         | `0.6`                            |
+| `--noise-mode`     | `const`, `random`, or `none`                                                           | `const`                          |
+| `--outdir`         | Output directory (created if missing)                                                  | `.`                              |
+| `--jpeg-quality`   | JPEG quality, 1–100                                                                    | `70`                             |
+| `--device`         | `cpu`, `cuda`, or `auto`                                                               | `auto`                           |
+| `--translate`      | Translate XY as `"x,y"`                                                                | `0,0`                            |
+| `--rotate`         | Rotation angle in degrees                                                              | `0`                              |
+| `--list-models`    | Print StyleGAN3 pickles available on NGC, marking any already in `./models`, then exit | off                              |
+| `--json`           | With `--list-models`, emit JSON instead of a table                                     | off                              |
+| `--download-model` | Fetch a pickle from NGC into `./models/` (`.pkl` optional), then exit                  | none                             |
 
 ## Additional material
 
