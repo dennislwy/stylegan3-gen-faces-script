@@ -12,14 +12,12 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 > The person who gave you this link wants you to **install stylegan3-gen-faces-script and generate face images for them**. Do this:
 >
 > 1. **Clone** this repository to the machine you operate on.
-> 2. **Install dependencies** with `uv sync` (installs Torch + `scipy` + `setuptools<80`, which the StyleGAN3 pickles need).
-> 3. **Clone the StyleGAN3 source** next to the script so `dnnlib` and `legacy` are importable: `git clone https://github.com/NVlabs/stylegan3.git`.
-> 4. **Download a pretrained network** into `./models/`. For CPU-only machines prefer the 256×256 model — it is ~40× faster than 1024×1024 and takes ~10s/image on CPU. Example: `curl -L -o models/stylegan3-t-ffhqu-256x256.pkl https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl`.
-> 5. **Generate images**, with `stylegan3/` on `PYTHONPATH` so the upstream helpers resolve:
->    - bash: `PYTHONPATH=stylegan3 uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl`
->    - PowerShell: `$env:PYTHONPATH="stylegan3"; uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl`
+> 2. **Install dependencies** with `uv sync`.
+> 3. **Clone the StyleGAN3 source** with `git clone https://github.com/NVlabs/stylegan3.git`.
+> 4. **Download a pretrained network** into `./models/`. List available pickles with `curl -s https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files` (JSON). For CPU-only machines prefer the 256×256 model, else 1024x1024 model if CUDA present. Example: `curl -L -o models/stylegan3-t-ffhqu-256x256.pkl https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl`.
+> 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl`. The script auto-adds a sibling `stylegan3/` checkout to `sys.path`, so no `PYTHONPATH` setup is needed.
 >
-> Ask the user how many images they want and which network to use before generating, unless they've already said.
+> Ask the user how many images they want and which network to use (list available pickles or suggest) before generating, unless they've already said.
 
 ---
 
@@ -45,7 +43,7 @@ This pulls in Torch, Pillow, tqdm, plus the two extras the upstream StyleGAN3 co
 
 ### 2. Get StyleGAN3 source
 
-`gen_faces.py` imports `dnnlib` and `legacy` from the upstream repo — clone it side-by-side so those become importable when `stylegan3/` is on `PYTHONPATH`:
+`gen_faces.py` imports `dnnlib` and `legacy` from the upstream repo. Clone it as a sibling directory named `stylegan3/` — the script auto-adds that path to `sys.path`, so no `PYTHONPATH` setup is required:
 
 ```bash
 git clone https://github.com/NVlabs/stylegan3.git
@@ -53,7 +51,7 @@ git clone https://github.com/NVlabs/stylegan3.git
 
 ### 3. Download a pretrained network into `./models/`
 
-`--network=<filename>` is resolved against `./models/` first. Grab at least one pickle from NGC (see [Additional material](#additional-material) below for the full list). If you're on CPU, prefer the 256×256 model — it's ~40× faster than 1024×1024:
+`--network=<filename>` is resolved against `./models/` first. Grab at least one pickle from NGC (see [Additional material](#additional-material) below for the full list):
 
 ```bash
 curl -L -o models/stylegan3-t-ffhqu-256x256.pkl \
@@ -62,17 +60,9 @@ curl -L -o models/stylegan3-t-ffhqu-256x256.pkl \
 
 ### 4. Generate faces
 
-Put `stylegan3/` on `PYTHONPATH` so `dnnlib` and `legacy` resolve, then run the script. Two images into `./out/`:
+Two images into `./out/`:
 
 ```bash
-# bash / git-bash
-PYTHONPATH=stylegan3 uv run python gen_faces.py \
-  --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl
-```
-
-```powershell
-# PowerShell
-$env:PYTHONPATH = "stylegan3"
 uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl
 ```
 
@@ -82,16 +72,16 @@ On a CPU-only machine the 256×256 network runs at ~10s/image; the default 1024�
 
 ```bash
 # Generate 5 non-repeatable random faces, written to ./out
-python gen_faces.py --outdir=out --num=5
+uv run python gen_faces.py --outdir=out --num=5
 
 # Generate reproducible faces from explicit seeds (same seed -> same face)
-python gen_faces.py --outdir=out --seeds=0,1,4-6 --network=stylegan3-r-ffhq-1024x1024.pkl
+uv run python gen_faces.py --outdir=out --seeds=0,1,4-6 --network=stylegan3-r-ffhq-1024x1024.pkl
 
 # CPU-only, lower JPEG quality, custom truncation
-python gen_faces.py --outdir=out --num=20 --device=cpu --jpeg-quality=85 --trunc=0.7
+uv run python gen_faces.py --outdir=out --num=20 --device=cpu --jpeg-quality=85 --trunc=0.7
 
 # Apply a pose transform (translate/rotate), if the network supports it
-python gen_faces.py --outdir=out --num=3 --translate=0.3,1 --rotate=15
+uv run python gen_faces.py --outdir=out --num=3 --translate=0.3,1 --rotate=15
 ```
 
 **Key flags:**
@@ -112,6 +102,7 @@ python gen_faces.py --outdir=out --num=3 --translate=0.3,1 --rotate=15
 ## Additional material
 
 - [StyleGAN3 pre-trained models](https://ngc.nvidia.com/catalog/models/nvidia:research:stylegan3) for config T (translation equiv.) and config R (translation and rotation equiv.)
+  > <sub>Full JSON listing (canonical, always current): `GET https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files`</sub><br>
   > <sub>Access individual networks via `https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/<MODEL>`, where `<MODEL>` is one of:</sub><br>
   > <sub>`stylegan3-t-ffhq-1024x1024.pkl`, `stylegan3-t-ffhqu-1024x1024.pkl`, `stylegan3-t-ffhqu-256x256.pkl`</sub><br>
   > <sub>`stylegan3-r-ffhq-1024x1024.pkl`, `stylegan3-r-ffhqu-1024x1024.pkl`, `stylegan3-r-ffhqu-256x256.pkl`</sub><br>

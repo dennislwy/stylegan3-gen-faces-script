@@ -7,8 +7,14 @@ import argparse
 import os
 import re
 import secrets
+import sys
 import time
 from typing import List, Optional, Tuple, Union
+
+# Make a sibling `stylegan3/` checkout importable without requiring PYTHONPATH.
+_STYLEGAN3_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stylegan3')
+if os.path.isdir(_STYLEGAN3_DIR) and _STYLEGAN3_DIR not in sys.path:
+    sys.path.insert(0, _STYLEGAN3_DIR)
 
 import dnnlib
 import legacy
