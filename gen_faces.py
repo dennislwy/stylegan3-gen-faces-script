@@ -4,12 +4,16 @@ Each output file is named after the first 10 characters of a ULID (the
 time-based, sortable part), e.g. 0A6PTW9HNO.jpg.
 """
 import argparse
+import json
 import os
 import re
 import secrets
 import sys
 import time
+import urllib.request
 from typing import List, Optional, Tuple, Union
+
+NGC_FILES_URL = 'https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files'
 
 # Make a sibling `stylegan3/` checkout importable without requiring PYTHONPATH.
 _STYLEGAN3_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stylegan3')
@@ -116,12 +120,17 @@ def resolve_device(device: str) -> torch.device:
 
 
 def resolve_network(network: str) -> str:
-    """Accept a bare filename (looked up under ./models), a local path, or a URL."""
+    """Accept a bare filename (looked up under ./models), a local path, or a URL.
+
+    A missing `.pkl` extension is tolerated for bare filenames.
+    """
     if '://' in network or os.path.isfile(network):
         return network
-    local = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models', network)
-    if os.path.isfile(local):
-        return local
+    models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
+    for candidate in (network, network + '.pkl') if not network.endswith('.pkl') else (network,):
+        local = os.path.join(models_dir, candidate)
+        if os.path.isfile(local):
+            return local
     return network  # let dnnlib.util.open_url try it as-is (e.g. NGC URL)
 
 
@@ -135,9 +144,9 @@ def parse_args() -> argparse.Namespace:
   python gen_faces.py --outdir=out --num=5
 
   # Reproducible faces from explicit seeds (same seed -> same face, like gen_images.py)
-  python gen_faces.py --outdir=out --seeds=0,1,4-6 --network=stylegan3-r-ffhq-1024x1024.pkl
+  python gen_faces.py --outdir=out --seeds=0,1,4-6 --network=stylegan3-r-ffhq-1024x1024
 ''')
-    parser.add_argument('--network', dest='network_pkl', type=str, default='stylegan3-t-ffhq-1024x1024.pkl',
+    parser.add_argument('--network', dest='network_pkl', type=str, default='stylegan3-t-ffhq-256x256',
                          help='Network pickle: filename under ./models, a local path, or a URL. (default: %(default)s)')
     parser.add_argument('--seeds', type=parse_range, default=None,
                          help="List/range of seeds for reproducible output (e.g. '0,1,4-6'), one image per seed. "
