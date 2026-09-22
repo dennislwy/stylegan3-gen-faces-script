@@ -1,0 +1,18 @@
+[project]
+name = "stylegan3-gen-faces-script"
+version = "0.1.0"
+description = "Generate random frontal face images with a pretrained StyleGAN3 network"
+readme = "README.md"
+# <3.12 because dnnlib does `from distutils.util import strtobool`, and distutils
+# was removed from the stdlib in 3.12.
+requires-python = ">=3.9,<3.12"
+
+dependencies = [
+    "numpy<2",
+    "pillow>=11.3.0",
+    "requests>=2.32.5",
+    "torch>=2.0",
+    "tqdm>=4.70.1",
+    # legacy.py (StyleGAN3) imports click at module level.
+    "click",
+]
