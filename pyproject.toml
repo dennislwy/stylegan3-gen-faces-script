@@ -11,7 +11,6 @@ dependencies = [
     "numpy<2",
     "pillow>=11.3.0",
     "requests>=2.32.5",
-    "torch==2.6.0",
     "tqdm>=4.70.1",
     # legacy.py (StyleGAN3) imports click at module level.
     "click",
@@ -23,15 +22,31 @@ dependencies = [
     "ninja>=1.13.2",
 ]
 
-[[tool.uv.index]]
-name = "pytorch-cu124"
-url = "https://download.pytorch.org/whl/cu124"
-explicit = true
+# Torch is opt-in via extras so CPU-only machines don't pull ~2 GB of
+# unused CUDA wheels. Pick exactly one at install time:
+#   uv sync --extra cpu     # CPU-only build (~200 MB)
+#   uv sync --extra cuda    # CUDA 12.4 build (default before this split)
+[project.optional-dependencies]
+cpu  = ["torch==2.6.0"]
+cuda = ["torch==2.6.0"]
+
+[tool.uv]
+# `cpu` and `cuda` install the same package from different indexes, so
+# uv needs to be told they are alternatives, not additive.
+conflicts = [[{ extra = "cpu" }, { extra = "cuda" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu",   extra = "cpu"  },
+    { index = "pytorch-cu124", extra = "cuda" },
+]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
-[tool.uv.sources]
-torch = { index = "pytorch-cu124" }
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true

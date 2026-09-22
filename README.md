@@ -13,9 +13,9 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 > Do this:
 >
 > 1. **Clone** this repository with `git clone https://github.com/dennislwy/stylegan3-gen-faces-script.git`to the machine you operate on.
-> 2. **Install dependencies** with `uv sync`.
+> 2. **Install dependencies** — pick a Torch build: `uv sync --extra cuda` if the machine has an NVIDIA GPU, otherwise `uv sync --extra cpu`. Exactly one extra is required (they are mutually exclusive).
 > 3. **Clone the StyleGAN3 source** with `git clone https://github.com/NVlabs/stylegan3.git`.
-> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model <MODEL_NAME>`. For CUDA machines prefer the 1024x1024 model, else the 256x256 model for CPU-only machines.
+> 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model <MODEL_NAME>`. For CUDA machines recommend use the 1024x1024 model, else the 256x256 model for CPU-only machines.
 > 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhq-1024x1024`.
 >
 > Ask the user how many images they want and which network to use (list models and suggest) before generating, unless they've already said.
@@ -36,11 +36,16 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 
 ### 1. Install dependencies
 
+Torch is opt-in via a mutually-exclusive extra so CPU-only machines don't pull the ~2 GB CUDA wheels. Pick one:
+
 ```bash
-uv sync
+uv sync --extra cpu     # CPU-only build (~200 MB)
+uv sync --extra cuda    # CUDA 12.4 build (needs an NVIDIA GPU + driver)
 ```
 
-This pulls in Torch, Pillow, tqdm, plus the two extras the upstream StyleGAN3 code silently requires: `scipy` (imported when the network pickle is unpickled) and `setuptools<80` (pinned because `torch_utils.ops.conv2d_gradfix` imports `pkg_resources`, which was removed from setuptools 81+).
+Plain `uv sync` (no extra) will resolve everything *except* Torch — you'll hit an ImportError at runtime, so always pass one of the two extras. Switching later just means re-running `uv sync --extra <other>`.
+
+This also pulls in the two extras the upstream StyleGAN3 code silently requires: `scipy` (imported when the network pickle is unpickled) and `setuptools<80` (pinned because `torch_utils.ops.conv2d_gradfix` imports `pkg_resources`, which was removed from setuptools 81+).
 
 ### 2. Get StyleGAN3 source
 
