@@ -95,7 +95,7 @@ uv run python gen_faces.py --outdir=out --seeds=0,1,4-6 --network=stylegan3-r-ff
 uv run python gen_faces.py --outdir=out --num=20 --device=cpu --jpeg-quality=85 --trunc=0.7
 
 # Apply a pose transform (translate/rotate), if the network supports it
-uv run python gen_faces.py --outdir=out --num=3 --translate=0.3,1 --rotate=15
+uv run python gen_faces.py --outdir=out --num=3 --translate=0.05,0 --rotate=5
 ```
 
 **Key flags:**

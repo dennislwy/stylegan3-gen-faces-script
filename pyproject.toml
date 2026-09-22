@@ -1,6 +1,6 @@
 [project]
 name = "stylegan3-gen-faces-script"
-version = "1.0.0"
+version = "1.0.1"
 description = "Generate random face images with a pretrained StyleGAN3 network"
 readme = "README.md"
 # <3.12 because dnnlib does `from distutils.util import strtobool`, and distutils
