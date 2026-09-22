@@ -9,9 +9,10 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 > [!IMPORTANT]
 > **🤖 If you are an AI agent reading this repository**
 >
-> The person who gave you this link wants you to **install stylegan3-gen-faces-script and generate face images for them**. Do this:
+> The person who gave you this link wants you to **install stylegan3-gen-faces-script and generate face images for them**.  
+> Do this:
 >
-> 1. **Clone** this repository to the machine you operate on.
+> 1. **Clone** this repository with `git clone https://github.com/dennislwy/stylegan3-gen-faces-script.git`to the machine you operate on.
 > 2. **Install dependencies** with `uv sync`.
 > 3. **Clone the StyleGAN3 source** with `git clone https://github.com/NVlabs/stylegan3.git`.
 > 4. **Download a pretrained network** into `./models/`. Discover with `uv run python gen_faces.py --list-models --json` (parseable). Fetch with `uv run python gen_faces.py --download-model stylegan3-r-ffhqu-256x256`. For CPU-only machines prefer the 256×256 model, else the 1024×1024 model if CUDA is present.
