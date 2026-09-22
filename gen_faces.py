@@ -1,4 +1,4 @@
-"""Generate random frontal face images with a pretrained StyleGAN3 network.
+"""Generate random face images with a pretrained StyleGAN3 network.
 
 Wraps the upstream https://github.com/NVlabs/stylegan3 generator behind a small
 CLI. Two modes of image generation:
@@ -17,6 +17,11 @@ Convenience subcommands (each exits before touching Torch):
 * ``--list-models``   — fetch NGC file list; print available pickles.
 * ``--download-model NAME`` — download a pickle into ``./models/``.
 """
+# Enable PEP 604 (``X | Y``) union syntax on Python 3.9/3.10 by making all
+# annotations lazy strings. Together with PEP 585 built-in generics (``list``,
+# ``tuple``, ``dict``) this removes the need for ``from typing import ...``.
+from __future__ import annotations
+
 import argparse
 import json
 import os
@@ -25,7 +30,6 @@ import secrets
 import sys
 import time
 import urllib.request
-from typing import List, Optional, Tuple, Union
 
 NGC_FILES_URL = 'https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files'
 
@@ -44,7 +48,7 @@ from tqdm import tqdm
 _CROCKFORD32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'  # ULID alphabet (no I, L, O, U)
 
 
-def parse_range(s: Union[str, List]) -> List[int]:
+def parse_range(s: str | list) -> list[int]:
     """Expand a comma/range spec into an explicit list of integers.
 
     Accepts a string like ``'1,2,5-10'`` and returns ``[1, 2, 5, 6, 7, 8, 9, 10]``.
@@ -71,7 +75,7 @@ def parse_range(s: Union[str, List]) -> List[int]:
     return ranges
 
 
-def parse_vec2(s: Union[str, Tuple[float, float]]) -> Tuple[float, float]:
+def parse_vec2(s: str | tuple[float, float]) -> tuple[float, float]:
     """Parse a 2-vector of the form ``'a,b'`` into ``(float, float)``.
 
     Used as the ``argparse`` type for ``--translate``. If a tuple is passed
@@ -114,7 +118,7 @@ def jpeg_quality_type(s: str) -> int:
     return v
 
 
-def make_transform(translate: Tuple[float, float], angle: float) -> np.ndarray:
+def make_transform(translate: tuple[float, float], angle: float) -> np.ndarray:
     """Build a 3×3 affine matrix for StyleGAN3's ``synthesis.input.transform``.
 
     The result composes a rotation by ``angle`` (degrees) with a translation by
@@ -248,7 +252,7 @@ def _models_dir() -> str:
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
 
 
-def _fetch_ngc_pkls() -> List[dict]:
+def _fetch_ngc_pkls() -> list[dict]:
     """Fetch the NGC file listing and keep only top-level ``*.pkl`` entries.
 
     The NGC bundle also contains ``metrics/inception-*.pkl`` and
@@ -362,9 +366,11 @@ def resolve_network(network: str) -> str:
         2. Otherwise treat it as a bare name and probe ``./models/<name>``.
            If the caller omitted the ``.pkl`` extension, ``./models/<name>.pkl``
            is also tried.
-        3. Fall through and return the raw value so ``dnnlib.util.open_url``
-           can attempt it as a URL — this preserves upstream behaviour and
-           lets users pass a raw NGC URL if they want.
+        3. If still not found, query NGC's file listing. When the name matches
+           a known pickle, download it into ``./models/`` and return that path.
+        4. Fall through and return the raw value so ``dnnlib.util.open_url``
+           can attempt it as a URL — preserves upstream behaviour and lets
+           users pass a raw NGC URL if they want.
 
     Args:
         network: The raw value of ``--network``.
@@ -374,12 +380,28 @@ def resolve_network(network: str) -> str:
     """
     if '://' in network or os.path.isfile(network):
         return network
-    models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
-    for candidate in (network, network + '.pkl') if not network.endswith('.pkl') else (network,):
+    models_dir = _models_dir()
+    candidates = (network,) if network.endswith('.pkl') else (network, network + '.pkl')
+    for candidate in candidates:
         local = os.path.join(models_dir, candidate)
         if os.path.isfile(local):
             return local
-    return network  # let dnnlib.util.open_url try it as-is (e.g. NGC URL)
+
+    # Not found locally: check NGC and auto-download if it's a known pickle.
+    pkl_name = network if network.endswith('.pkl') else network + '.pkl'
+    try:
+        available = {f['path'] for f in _fetch_ngc_pkls()}
+    except Exception as e:
+        print(f'warn: could not query NGC listing ({e}); passing "{network}" through as-is.')
+        return network
+    if pkl_name in available:
+        print(f'Network "{pkl_name}" not found in {models_dir}; fetching from NGC...')
+        download_model(pkl_name)
+        return os.path.join(models_dir, pkl_name)
+    raise SystemExit(
+        f'--network "{network}": not a URL, no such file locally, and not '
+        f'listed on NGC. Run "gen_faces.py --list-models" to see valid names.'
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -474,7 +496,7 @@ def main():
 
     # With --seeds: deterministic, one image per seed (matches gen_images.py's RandomState(seed) scheme).
     # Without: non-repeatable, OS-entropy-seeded latents, --num images.
-    seed_list: List[Optional[int]] = list(args.seeds) if args.seeds is not None else [None] * args.num_images
+    seed_list: list[int | None] = list(args.seeds) if args.seeds is not None else [None] * args.num_images
 
     start_time = time.perf_counter()
     for seed in tqdm(seed_list, desc='Generating', unit='img'):

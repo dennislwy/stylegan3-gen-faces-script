@@ -1,6 +1,6 @@
 # stylegan3-gen-faces-script
 
-Generate random, photorealistic frontal face images using a pretrained [StyleGAN3](https://github.com/NVlabs/stylegan3) network.
+Generate random, photorealistic face images using a pretrained [StyleGAN3](https://github.com/NVlabs/stylegan3) network.
 
 Each output image is saved as `<ulid10>.jpg`, named after the first 10 characters of a ULID (the time-based, sortable part), so files sort chronologically and never collide — e.g. `0A6PTW9HNO.jpg`.
 
