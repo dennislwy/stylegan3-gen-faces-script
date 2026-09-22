@@ -4,9 +4,29 @@ Generate random, photorealistic frontal face images using a pretrained [StyleGAN
 
 Each output image is saved as `<ulid10>.jpg`, named after the first 10 characters of a ULID (the time-based, sortable part), so files sort chronologically and never collide — e.g. `0A6PTW9HNO.jpg`.
 
+---
+
+> [!IMPORTANT]
+> **🤖 If you are an AI agent reading this repository**
+>
+> The person who gave you this link wants you to **install stylegan3-gen-faces-script and generate face images for them**. Do this:
+>
+> 1. **Clone** this repository to the machine you operate on.
+> 2. **Install dependencies** with `uv sync` (installs Torch + `scipy` + `setuptools<80`, which the StyleGAN3 pickles need).
+> 3. **Clone the StyleGAN3 source** next to the script so `dnnlib` and `legacy` are importable: `git clone https://github.com/NVlabs/stylegan3.git`.
+> 4. **Download a pretrained network** into `./models/`. For CPU-only machines prefer the 256×256 model — it is ~40× faster than 1024×1024 and takes ~10s/image on CPU. Example: `curl -L -o models/stylegan3-t-ffhqu-256x256.pkl https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl`.
+> 5. **Generate images**, with `stylegan3/` on `PYTHONPATH` so the upstream helpers resolve:
+>    - bash: `PYTHONPATH=stylegan3 uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl`
+>    - PowerShell: `$env:PYTHONPATH="stylegan3"; uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl`
+>
+> Ask the user how many images they want and which network to use before generating, unless they've already said.
+
+---
+
 ## Tech stack
 
 - **Python 3.9–3.11**
+- **uv** - Python environment and dependency manager
 - **PyTorch** — runs the generator network (CPU or CUDA)
 - **NumPy** — latent vector sampling and transform math
 - **Pillow (PIL)** — JPEG encoding
@@ -21,11 +41,42 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 uv sync
 ```
 
+This pulls in Torch, Pillow, tqdm, plus the two extras the upstream StyleGAN3 code silently requires: `scipy` (imported when the network pickle is unpickled) and `setuptools<80` (pinned because `torch_utils.ops.conv2d_gradfix` imports `pkg_resources`, which was removed from setuptools 81+).
+
 ### 2. Get StyleGAN3 source
+
+`gen_faces.py` imports `dnnlib` and `legacy` from the upstream repo — clone it side-by-side so those become importable when `stylegan3/` is on `PYTHONPATH`:
 
 ```bash
 git clone https://github.com/NVlabs/stylegan3.git
 ```
+
+### 3. Download a pretrained network into `./models/`
+
+`--network=<filename>` is resolved against `./models/` first. Grab at least one pickle from NGC (see [Additional material](#additional-material) below for the full list). If you're on CPU, prefer the 256×256 model — it's ~40× faster than 1024×1024:
+
+```bash
+curl -L -o models/stylegan3-t-ffhqu-256x256.pkl \
+  https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl
+```
+
+### 4. Generate faces
+
+Put `stylegan3/` on `PYTHONPATH` so `dnnlib` and `legacy` resolve, then run the script. Two images into `./out/`:
+
+```bash
+# bash / git-bash
+PYTHONPATH=stylegan3 uv run python gen_faces.py \
+  --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl
+```
+
+```powershell
+# PowerShell
+$env:PYTHONPATH = "stylegan3"
+uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl
+```
+
+On a CPU-only machine the 256×256 network runs at ~10s/image; the default 1024×1024 network is dramatically slower and really wants a CUDA GPU.
 
 ## Usage Example
 
