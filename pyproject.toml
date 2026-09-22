@@ -11,7 +11,7 @@ dependencies = [
     "numpy<2",
     "pillow>=11.3.0",
     "requests>=2.32.5",
-    "torch>=2.0",
+    "torch==2.6.0",
     "tqdm>=4.70.1",
     # legacy.py (StyleGAN3) imports click at module level.
     "click",
@@ -20,4 +20,18 @@ dependencies = [
     # StyleGAN3's torch_utils.ops.conv2d_gradfix imports pkg_resources,
     # which was removed from setuptools 81+.
     "setuptools<80",
+    "ninja>=1.13.2",
 ]
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu124" }
