@@ -119,6 +119,25 @@ def resolve_device(device: str) -> torch.device:
     return torch.device(device)
 
 
+def list_models() -> None:
+    """Print available StyleGAN3 pickles on NGC, marking any already in ./models."""
+    with urllib.request.urlopen(NGC_FILES_URL, timeout=30) as resp:
+        data = json.load(resp)
+    models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
+    files = sorted(
+        (f for f in data.get('modelFiles', [])
+         if f['path'].endswith('.pkl') and '/' not in f['path']),
+        key=lambda f: f['path'],
+    )
+    print(f'{"":2}  {"NAME":40} {"SIZE":>8}')
+    for f in files:
+        name = f['path']
+        size_mb = f['sizeInBytes'] / (1024 * 1024)
+        mark = '*' if os.path.isfile(os.path.join(models_dir, name)) else ' '
+        print(f'{mark:2}  {name:40} {size_mb:>6.1f}M')
+    print(f'\n({sum(1 for f in files if os.path.isfile(os.path.join(models_dir, f["path"])))} of {len(files)} present in ./models; * = already downloaded)')
+
+
 def resolve_network(network: str) -> str:
     """Accept a bare filename (looked up under ./models), a local path, or a URL.
 
@@ -167,11 +186,16 @@ def parse_args() -> argparse.Namespace:
                          help='Translate XY-coordinate (e.g. "0.3,1"). (default: %(default)s)')
     parser.add_argument('--rotate', type=float, default=0, metavar='ANGLE',
                          help='Rotation angle in degrees. (default: %(default)s)')
+    parser.add_argument('--list-models', action='store_true',
+                         help='Fetch the NGC file list, print available StyleGAN3 pickles (marking any already in ./models), then exit.')
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    if args.list_models:
+        list_models()
+        return
     os.makedirs(args.outdir, exist_ok=True)
     dev = resolve_device(args.device)
     network_pkl = resolve_network(args.network_pkl)

@@ -14,7 +14,7 @@ Each output image is saved as `<ulid10>.jpg`, named after the first 10 character
 > 1. **Clone** this repository to the machine you operate on.
 > 2. **Install dependencies** with `uv sync`.
 > 3. **Clone the StyleGAN3 source** with `git clone https://github.com/NVlabs/stylegan3.git`.
-> 4. **Download a pretrained network** into `./models/`. List available pickles with `curl -s https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files` (JSON). For CPU-only machines prefer the 256×256 model, else 1024x1024 model if CUDA present. Example: `curl -L -o models/stylegan3-t-ffhqu-256x256.pkl https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl`.
+> 4. **Download a pretrained network** into `./models/`. List available pickles with `uv run python gen_faces.py --list-models` (or `curl -s https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files` for raw JSON). For CPU-only machines prefer the 256×256 model, else 1024x1024 model if CUDA present. Example: `curl -L -o models/stylegan3-t-ffhqu-256x256.pkl https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl`.
 > 5. **Generate images**: `uv run python gen_faces.py --outdir=out --num=2 --network=stylegan3-t-ffhqu-256x256.pkl`. The script auto-adds a sibling `stylegan3/` checkout to `sys.path`, so no `PYTHONPATH` setup is needed.
 >
 > Ask the user how many images they want and which network to use (list available pickles or suggest) before generating, unless they've already said.
@@ -51,7 +51,13 @@ git clone https://github.com/NVlabs/stylegan3.git
 
 ### 3. Download a pretrained network into `./models/`
 
-`--network=<filename>` is resolved against `./models/` first. Grab at least one pickle from NGC (see [Additional material](#additional-material) below for the full list):
+`--network=<filename>` is resolved against `./models/` first (the `.pkl` extension is optional). List everything available on NGC — with a `*` next to what's already downloaded:
+
+```bash
+uv run python gen_faces.py --list-models
+```
+
+Then grab a pickle. On CPU, prefer the 256×256 model:
 
 ```bash
 curl -L -o models/stylegan3-t-ffhqu-256x256.pkl \
@@ -98,6 +104,7 @@ uv run python gen_faces.py --outdir=out --num=3 --translate=0.3,1 --rotate=15
 | `--device`       | `cpu`, `cuda`, or `auto`                                                      | `auto`                           |
 | `--translate`    | Translate XY as `"x,y"`                                                       | `0,0`                            |
 | `--rotate`       | Rotation angle in degrees                                                     | `0`                              |
+| `--list-models`  | Print StyleGAN3 pickles available on NGC, marking any already in `./models`, then exit | off                              |
 
 ## Additional material
 
